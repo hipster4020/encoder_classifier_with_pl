@@ -1,7 +1,8 @@
 # 🤖 Sentiment Classification
 ## 👉🏻 model
 Transformer Encoder<br><br>
-BPE Tokenizer train 후 Word2vec Weight Embedding, Transformer Encoder Model 활용
+BPE Tokenizer train 후 Word2vec Weight Embedding, Transformer Encoder Model<br>
+Pytorch Lightning 활용
 <br>
 <br>
 <br>
