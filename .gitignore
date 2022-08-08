@@ -1,0 +1,10 @@
+data/
+src/__pycache__/
+src/models/__pycache__/
+src/outputs/
+src/config.yml
+src/model/__pycache__/
+src/processing/config.py
+src/processing/.ipynb_checkpoints/
+src/processing/__pycache__/
+tokenizer
