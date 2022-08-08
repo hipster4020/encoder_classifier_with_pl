@@ -15,25 +15,24 @@ def main(cfg):
 
     # model
     model = PLEncoder(cfg.MODEL, cfg.OPTIMIZER)
-    print(f"model : {model}")
 
-    # # dataloader
-    # train_dataset, eval_dataset = load(tokenizer=tokenizer, **cfg.DATASETS)
-    # train_dataloader = get_dataloader(train_dataset, **cfg.DATALOADER)
-    # eval_dataloader = get_dataloader(eval_dataset, **cfg.DATALOADER)
-    # print(f"train_dataloader : {train_dataloader}")
-    # print(f"test_dataloader : {test_dataloader}")
+    # dataloader
+    train_dataset, eval_dataset = load(tokenizer=tokenizer, **cfg.DATASETS)
+    train_dataloader = get_dataloader(train_dataset, **cfg.DATALOADER)
+    eval_dataloader = get_dataloader(eval_dataset, **cfg.DATALOADER)
+    print(f"train_dataloader : {train_dataloader}")
+    print(f"eval_dataloader : {eval_dataloader}")
 
-    # # logs
-    # wandb_logger = WandbLogger(**cfg.PATH.wandb)
-    # callbacks = [ModelCheckpoint(**cfg.PATH.ckpt)]
+    # logs
+    wandb_logger = WandbLogger(**cfg.PATH.wandb)
+    callbacks = [ModelCheckpoint(**cfg.PATH.ckpt)]
 
-    # trainer = Trainer(
-    #     callbacks=callbacks,
-    #     logger=wandb_logger,
-    #     **cfg.TRAININGARGS,
-    # )
-    # trainer.fit(model, train_dataloader, eval_dataloader)
+    trainer = Trainer(
+        callbacks=callbacks,
+        logger=wandb_logger,
+        **cfg.TRAININGARGS,
+    )
+    trainer.fit(model, train_dataloader, eval_dataloader)
 
 
 if __name__ == "__main__":
