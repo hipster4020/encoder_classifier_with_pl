@@ -1,5 +1,5 @@
 from typing import Dict, Union
-
+import itertools
 import torch
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
@@ -21,18 +21,27 @@ class PLEncoder(LightningModule):
         self.optimizer_config = optimizer_config
         self.class_weight = torch.tensor(class_weight)
 
-    def forward(self, input_ids, spectrogram):
-        return self.model(input_ids, spectrogram)
+    def forward(self, x, src_mask):
+        return self.model(x, src_mask)
 
     def loss_function(self, output, label):
         loss = F.mse_loss(output, label)
         return loss
 
     def training_step(self, batch, batch_idx):
-        input_ids, spectrogram = batch
+        x = batch['input_ids']
+        src_mask = ~batch['attention_mask'][0].bool()
+        y = batch['labels']
+        
+        print(f"x : {x}")
+        print(f"type x : {type(x)}")
+        print(f"y : {y}")
+        print(f"type y : {type(y)}")
+        print(f"src_mask : {src_mask}")
+        print(f"type src_mask : {type(src_mask)}")
 
-        output = self(input_ids, spectrogram)
-        loss = self.loss_function(output)
+        y_hat = self(x, src_mask)
+        loss = self.loss_function(y_hat, y)
 
         log_dict = {
             "train/loss": loss,
@@ -41,11 +50,13 @@ class PLEncoder(LightningModule):
         self.log_dict(log_dict, on_epoch=True)
         return log_dict
 
-    def validation_step(self, batch):
-        input_ids, spectrogram = batch
+    def validation_step(self, batch, batch_idx):
+        x = batch['input_ids']
+        src_mask = ~batch['attention_mask'][0].bool()
+        y = batch['labels']
 
-        output = self(input_ids, spectrogram)
-        loss = self.loss_function(output)
+        y_hat = self(x, src_mask)
+        loss = self.loss_function(y_hat, y)
 
         log_dict = {
             "eval/loss": loss,

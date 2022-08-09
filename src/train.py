@@ -1,4 +1,5 @@
 import hydra
+import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
@@ -20,8 +21,6 @@ def main(cfg):
     train_dataset, eval_dataset = load(tokenizer=tokenizer, **cfg.DATASETS)
     train_dataloader = get_dataloader(train_dataset, **cfg.DATALOADER)
     eval_dataloader = get_dataloader(eval_dataset, **cfg.DATALOADER)
-    print(f"train_dataloader : {train_dataloader}")
-    print(f"eval_dataloader : {eval_dataloader}")
 
     # logs
     wandb_logger = WandbLogger(**cfg.PATH.wandb)

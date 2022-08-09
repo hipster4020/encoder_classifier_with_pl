@@ -8,7 +8,7 @@ logging.set_verbosity(logging.ERROR)
 
 # Write code to load custom data.
 def load(
-    tokenizer, 
+    tokenizer,
     seq_len,
     train_data_path: str,
     eval_data_path: Optional[str] = None,
