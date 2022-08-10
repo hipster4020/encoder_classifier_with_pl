@@ -19,8 +19,7 @@ def load(
 ):
     def _tokenize_function(sample):
         tokenized = dict()
-
-        print(f"seq_len : {seq_len}")
+        print(f"len sample : {len(sample['content'])}")
         e = tokenizer(
             sample["content"],
             max_length=seq_len,
@@ -30,7 +29,7 @@ def load(
         )
         tokenized["input_ids"] = e["input_ids"]
         tokenized["attention_mask"] = e["attention_mask"]
-        print(f"tokenized : {tokenized}")
+        
         
         label = [int(l) for l in sample["label"]]
         tokenized["labels"] = label
