@@ -9,7 +9,7 @@ logging.set_verbosity(logging.ERROR)
 # Write code to load custom data.
 def load(
     tokenizer,
-    seq_len,
+    seq_len: int,
     train_data_path: str,
     eval_data_path: Optional[str] = None,
     train_test_split: Optional[float] = None,
@@ -20,6 +20,7 @@ def load(
     def _tokenize_function(sample):
         tokenized = dict()
 
+        print(f"seq_len : {seq_len}")
         e = tokenizer(
             sample["content"],
             max_length=seq_len,
@@ -29,7 +30,8 @@ def load(
         )
         tokenized["input_ids"] = e["input_ids"]
         tokenized["attention_mask"] = e["attention_mask"]
-
+        print(f"tokenized : {tokenized}")
+        
         label = [int(l) for l in sample["label"]]
         tokenized["labels"] = label
 

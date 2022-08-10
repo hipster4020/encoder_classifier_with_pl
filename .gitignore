@@ -7,4 +7,5 @@ src/model/__pycache__/
 src/processing/config.py
 src/processing/.ipynb_checkpoints/
 src/processing/__pycache__/
+src/backup
 tokenizer
