@@ -6,7 +6,7 @@ from pytorch_lightning import LightningModule
 
 from models.MainModel import EncoderModel
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class PLEncoder(LightningModule):
@@ -50,6 +50,7 @@ class PLEncoder(LightningModule):
         src_mask = batch["attention_mask"].to(self.device)
         y = batch["labels"].unsqueeze(1).to(self.device)
 
+        print(f"x : {x}")
         print(f"x : {x.shape}")
         print(f"src_mask : {src_mask.shape}")
         print(f"y : {y.shape}")

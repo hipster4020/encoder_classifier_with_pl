@@ -16,7 +16,7 @@ class EncoderModel(nn.Module):
         max_length=100,
     ):
         super().__init__()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         self.tok_embedding = nn.Embedding(input_dim, hidden_size)
         self.pos_embedding = nn.Embedding(max_length, hidden_size)
@@ -47,8 +47,6 @@ class EncoderModel(nn.Module):
         src = self.dropout(
             (self.tok_embedding(src) * self.scale) + self.pos_embedding(pos)
         )
-        print(f"pos : {pos}")
-        print(f"src : {src}")
 
         for layer in self.layers:
             src = layer(src, src_mask)
