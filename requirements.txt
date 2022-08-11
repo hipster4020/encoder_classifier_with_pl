@@ -13,3 +13,4 @@ Flask
 Flask_restful
 tensorflow_addons
 pymysql
+pytorch_lightning

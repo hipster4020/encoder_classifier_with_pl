@@ -47,6 +47,8 @@ class EncoderModel(nn.Module):
         src = self.dropout(
             (self.tok_embedding(src) * self.scale) + self.pos_embedding(pos)
         )
+        print(f"pos : {pos}")
+        print(f"src : {src}")
 
         for layer in self.layers:
             src = layer(src, src_mask)

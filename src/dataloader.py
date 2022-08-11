@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Union
 
 from datasets import load_dataset, logging
 from torch.utils.data import DataLoader
+from transformers import default_data_collator
 
 logging.set_verbosity(logging.ERROR)
 
@@ -19,7 +20,6 @@ def load(
 ):
     def _tokenize_function(sample):
         tokenized = dict()
-        print(f"len sample : {len(sample['content'])}")
         e = tokenizer(
             sample["content"],
             max_length=seq_len,
@@ -29,8 +29,7 @@ def load(
         )
         tokenized["input_ids"] = e["input_ids"]
         tokenized["attention_mask"] = e["attention_mask"]
-        
-        
+
         label = [int(l) for l in sample["label"]]
         tokenized["labels"] = label
 
@@ -78,4 +77,4 @@ def load(
 
 # Write preprocessor code to run in batches.
 def get_dataloader(dataset, **kwargs):
-    return DataLoader(dataset, **kwargs)
+    return DataLoader(dataset, collate_fn=default_data_collator, **kwargs)

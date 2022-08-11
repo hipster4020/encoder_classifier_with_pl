@@ -1,12 +1,13 @@
 from typing import Dict, Union
-import itertools
+
 import torch
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
 
 from models.MainModel import EncoderModel
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class PLEncoder(LightningModule):
     def __init__(
@@ -30,9 +31,9 @@ class PLEncoder(LightningModule):
         return loss
 
     def training_step(self, batch, batch_idx):
-        x = torch.LongTensor([i.tolist() for i in batch['input_ids']]).to(device)
-        src_mask = torch.LongTensor([i.tolist() for i in batch['attention_mask']]).to(device)
-        y = batch['labels'].unsqueeze(1).to(device)
+        x = batch["input_ids"].to(self.device)
+        src_mask = batch["attention_mask"].to(self.device)
+        y = batch["labels"].unsqueeze(1).to(self.device)
 
         y_hat = self(x, src_mask)
         loss = self.loss_function(y_hat, y)
@@ -45,16 +46,13 @@ class PLEncoder(LightningModule):
         return log_dict
 
     def validation_step(self, batch, batch_idx):
-        x = torch.LongTensor([i.tolist() for i in batch['input_ids']]).to(device)
-        src_mask = torch.LongTensor([i.tolist() for i in batch['attention_mask']]).to(device)
-        y = batch['labels'].unsqueeze(1).to(device)
+        x = batch["input_ids"].to(self.device)
+        src_mask = batch["attention_mask"].to(self.device)
+        y = batch["labels"].unsqueeze(1).to(self.device)
 
-        # print(f"x : {x}")
-        # print(f"x.shape: {x.shape}")
-        # print(f"src_mask : {src_mask}")
-        # print(f"src_mask.shape : {src_mask.shape}")
-        # print(f"y : {y}")
-        # print(f"y.shape : {y.shape}")
+        print(f"x : {x.shape}")
+        print(f"src_mask : {src_mask.shape}")
+        print(f"y : {y.shape}")
 
         y_hat = self(x, src_mask)
         loss = self.loss_function(y_hat, y)
