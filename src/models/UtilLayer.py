@@ -3,7 +3,13 @@ import torch.nn as nn
 
 
 class MultiHeadAttentionLayer(nn.Module):
-    def __init__(self, hid_dim, n_heads, dropout, device):
+    def __init__(
+        self,
+        hid_dim,
+        n_heads,
+        dropout,
+        device,
+    ):
         super().__init__()
 
         assert hid_dim % n_heads == 0
@@ -17,13 +23,16 @@ class MultiHeadAttentionLayer(nn.Module):
         self.fc_v = nn.Linear(hid_dim, hid_dim)
 
         self.fc_o = nn.Linear(hid_dim, hid_dim)
-
         self.dropout = nn.Dropout(dropout)
-
         self.scale = torch.sqrt(torch.FloatTensor([self.head_dim])).to(device)
 
-    def forward(self, query, key, value, mask=None):
-
+    def forward(
+        self,
+        query,
+        key,
+        value,
+        mask=None,
+    ):
         batch_size = query.shape[0]
 
         Q = self.fc_q(query)
@@ -42,10 +51,8 @@ class MultiHeadAttentionLayer(nn.Module):
         attention = torch.softmax(energy, dim=-1)
 
         x = torch.matmul(self.dropout(attention), V)
-
         x = x.permute(0, 2, 1, 3).contiguous()
         x = x.view(batch_size, -1, self.hid_dim)
-
         x = self.fc_o(x)
 
         return x, attention
@@ -65,3 +72,38 @@ class PositionwiseFeedforwardLayer(nn.Module):
         x = self.fc_2(x)
 
         return x
+
+
+class EncoderLayer(nn.Module):
+    def __init__(
+        self,
+        hid_dim,
+        n_heads,
+        pf_dim,
+        dropout,
+        device,
+    ):
+        super().__init__()
+
+        self.self_attn_layer_norm = nn.LayerNorm(hid_dim)
+        self.ff_layer_norm = nn.LayerNorm(hid_dim)
+        self.self_attention = MultiHeadAttentionLayer(hid_dim, n_heads, dropout, device)
+        self.positionwise_feedforward = PositionwiseFeedforwardLayer(
+            hid_dim, pf_dim, dropout
+        )
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, src, src_mask):
+        # self attention
+        _src, _ = self.self_attention(src, src, src, src_mask)
+
+        # dropout, residual connection and layer norm
+        src = self.self_attn_layer_norm(src + self.dropout(_src))
+
+        # positionwise feedforward
+        _src = self.positionwise_feedforward(src)
+
+        # dropout, residual and layer norm
+        src = self.ff_layer_norm(src + self.dropout(_src))
+
+        return src

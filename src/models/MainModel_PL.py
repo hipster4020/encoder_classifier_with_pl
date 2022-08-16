@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
 
-from models.MainModel import EncoderModel
+from models.MainModel import Encoder
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -12,14 +12,16 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class PLEncoder(LightningModule):
     def __init__(
         self,
-        model_config: Dict,
+        config: Dict,
         optimizer_config: Dict,
         class_weight: Union[int, float] = 8,
     ):
         super().__init__()
         self.save_hyperparameters()
 
-        self.model = EncoderModel(**model_config)
+        print(f"config : {config}")
+
+        self.model = Encoder(**config)
         self.optimizer_config = optimizer_config
         self.class_weight = torch.tensor(class_weight)
 
@@ -31,9 +33,9 @@ class PLEncoder(LightningModule):
         return loss
 
     def training_step(self, batch, batch_idx):
-        x = batch["input_ids"].to(self.device)
-        src_mask = batch["attention_mask"].to(self.device)
-        y = batch["labels"].unsqueeze(1).to(self.device)
+        x = batch["input_ids"].to(device)
+        src_mask = batch["attention_mask"].to(device)
+        y = batch["labels"].unsqueeze(1).to(device)
 
         y_hat = self(x, src_mask)
         loss = self.loss_function(y_hat, y)
@@ -46,14 +48,9 @@ class PLEncoder(LightningModule):
         return log_dict
 
     def validation_step(self, batch, batch_idx):
-        x = batch["input_ids"].to(self.device)
-        src_mask = batch["attention_mask"].to(self.device)
-        y = batch["labels"].unsqueeze(1).to(self.device)
-
-        print(f"x : {x}")
-        print(f"x : {x.shape}")
-        print(f"src_mask : {src_mask.shape}")
-        print(f"y : {y.shape}")
+        x = batch["input_ids"].to(device)
+        src_mask = batch["attention_mask"].to(device)
+        y = batch["labels"].unsqueeze(1).to(device)
 
         y_hat = self(x, src_mask)
         loss = self.loss_function(y_hat, y)
