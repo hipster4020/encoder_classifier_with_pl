@@ -19,8 +19,6 @@ class PLEncoder(LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
-        print(f"config : {config}")
-
         self.model = Encoder(**config)
         self.optimizer_config = optimizer_config
         self.class_weight = torch.tensor(class_weight)

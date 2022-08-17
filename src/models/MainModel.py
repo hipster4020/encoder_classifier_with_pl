@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from models.Layer import EncoderLayer
+from models.UtilLayer import EncoderLayer
 
 
 class Encoder(nn.Module):
@@ -11,26 +11,29 @@ class Encoder(nn.Module):
         hidden_size,
         num_layers,
         num_heads,
-        pf_dim,
+        inner_dim,
         dropout,
         max_length=100,
     ):
         super().__init__()
 
+        self.num_layers = num_layers
+        self.hidden_size = hidden_size
+        self.num_head = num_heads
+        self.inner_dim = inner_dim
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-        self.tok_embedding = nn.Embedding(input_dim, hidden_size)
+        self.embedding = nn.Embedding(input_dim, hidden_size, padding_idx=0)
         self.pos_embedding = nn.Embedding(max_length, hidden_size)
 
-        self.layers = nn.ModuleList(
+        self.enc_layers = nn.ModuleList(
             [
-                EncoderLayer(hidden_size, num_heads, pf_dim, dropout, self.device)
+                EncoderLayer(hidden_size, num_heads, inner_dim, dropout, self.device)
                 for _ in range(num_layers)
             ]
         )
 
         self.dropout = nn.Dropout(dropout)
-        self.scale = torch.sqrt(torch.FloatTensor([hidden_size])).to(self.device)
 
     def forward(
         self,
@@ -38,15 +41,19 @@ class Encoder(nn.Module):
         src_mask,
     ):
         batch_size = src.shape[0]
-        src_len = src.shape[1]
+        seq_len = src.shape[1]
 
         pos = (
-            torch.arange(0, src_len).unsqueeze(0).repeat(batch_size, 1).to(self.device)
+            torch.arange(0, seq_len).unsqueeze(0).repeat(batch_size, 1).to(self.device)
         )
-        src = self.dropout(
-            (self.tok_embedding(src) * self.scale) + self.pos_embedding(pos)
-        )
-        for layer in self.layers:
-            src = layer(src, src_mask)
 
-        return src
+        # embedding layer
+        output = self.dropout(self.embedding(src) + self.pos_embedding(pos))
+
+        # Dropout
+        output = self.dropout(output)
+
+        for layer in self.enc_layers:
+            output = layer(output, src_mask)
+
+        return output
