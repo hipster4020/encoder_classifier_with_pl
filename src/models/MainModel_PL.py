@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
 
-from models.MainModel import Encoder
+from models.MainModel import EncoderModel
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -19,7 +19,7 @@ class PLEncoder(LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
-        self.model = Encoder(**config)
+        self.model = EncoderModel(**config)
         self.optimizer_config = optimizer_config
         self.class_weight = torch.tensor(class_weight)
 
