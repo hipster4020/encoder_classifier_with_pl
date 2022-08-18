@@ -21,6 +21,12 @@ def main(cfg):
     train_dataloader = get_dataloader(train_dataset, **cfg.DATALOADER)
     eval_dataloader = get_dataloader(eval_dataset, **cfg.DATALOADER)
 
+    print(f"train_dataloader shape : {list(train_dataloader)[0]['input_ids'].shape}")
+    print(
+        f"train_dataloader shape : {list(train_dataloader)[0]['attention_mask'].shape}"
+    )
+    print(f"train_dataloader shape : {list(train_dataloader)[0]['labels'].shape}")
+
     # logs
     # wandb_logger = WandbLogger(**cfg.PATH.wandb)
     callbacks = [ModelCheckpoint(**cfg.PATH.ckpt)]
