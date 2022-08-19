@@ -30,9 +30,16 @@ class MultiHeadAttentionLayer(nn.Module):
         K = self.fc_k(key)
         V = self.fc_v(value)
 
-        Q = Q.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
-        K = K.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
-        V = V.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
+        print(f"Q : {Q}")
+        print(f"Q shape : {Q.shape}")
+
+        Q = Q.transpose(-1, -2)
+        print(f"Q  : {Q}")
+        print(f"Q shape : {Q.shape}")
+
+        # Q = Q.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
+        # K = K.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
+        # V = V.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
 
         energy = torch.matmul(Q, K.permute(0, 1, 3, 2)) / self.scale
 

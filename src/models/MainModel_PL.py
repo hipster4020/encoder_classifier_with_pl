@@ -6,7 +6,8 @@ from pytorch_lightning import LightningModule
 
 from models.MainModel import EncoderModel
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = "cpu"
 
 
 class PLEncoder(LightningModule):

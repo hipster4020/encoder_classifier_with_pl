@@ -13,10 +13,11 @@ class EncoderModel(nn.Module):
         num_heads,
         inner_dim,
         dropout,
-        max_length=100,
+        max_length=512,
     ):
         super().__init__()
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = "cpu"
 
         self.tok_embedding = nn.Embedding(input_dim, hidden_size)
         self.pos_embedding = nn.Embedding(max_length, hidden_size)
