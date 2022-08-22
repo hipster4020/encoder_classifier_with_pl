@@ -1,5 +1,8 @@
+import math
+
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class MultiHeadAttentionLayer(nn.Module):
@@ -15,7 +18,6 @@ class MultiHeadAttentionLayer(nn.Module):
         self.fc_q = nn.Linear(hid_dim, hid_dim)
         self.fc_k = nn.Linear(hid_dim, hid_dim)
         self.fc_v = nn.Linear(hid_dim, hid_dim)
-
         self.fc_o = nn.Linear(hid_dim, hid_dim)
 
         self.dropout = nn.Dropout(dropout)
@@ -26,36 +28,41 @@ class MultiHeadAttentionLayer(nn.Module):
 
         batch_size = query.shape[0]
 
-        Q = self.fc_q(query)
-        K = self.fc_k(key)
-        V = self.fc_v(value)
+        def transform(x, fc_layer):
+            out = fc_layer(x)
 
-        print(f"Q : {Q}")
-        print(f"Q shape : {Q.shape}")
+            out = out.view(batch_size, -1, self.n_heads, self.head_dim)
+            out = out.transpose(1, 2)  # n_batch, h, seq_len, d_k
 
-        Q = Q.transpose(-1, -2)
-        print(f"Q  : {Q}")
-        print(f"Q shape : {Q.shape}")
+            return out
 
-        # Q = Q.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
-        # K = K.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
-        # V = V.view(batch_size, -1, self.n_heads, self.head_dim).permute(0, 2, 1, 3)
+        Q = transform(query, self.fc_q)
+        K = transform(key, self.fc_k)
+        V = transform(value, self.fc_v)
 
-        energy = torch.matmul(Q, K.permute(0, 1, 3, 2)) / self.scale
+        # mask 수정
+        print(f"mask shape : {mask.shape}")
 
         if mask is not None:
-            energy = energy.masked_fill(mask == 0, -1e10)
+            mask = mask.unsqueeze(1)
 
-        attention = torch.softmax(energy, dim=-1)
+        # calculate_attention
+        d_k = K.size(-1)
+        energy = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(d_k)
 
-        x = torch.matmul(self.dropout(attention), V)
+        if mask is not None:
+            energy = energy.masked_fill(mask == 0, -1e9)
+        attention_prob = F.softmax(energy, dim=-1)
 
-        x = x.permute(0, 2, 1, 3).contiguous()
-        x = x.view(batch_size, -1, self.hid_dim)
+        print(f"attention_prob shape : {attention_prob.shape}")
+        print(f"V shape : {V.shape}")
 
-        x = self.fc_o(x)
+        out = torch.matmul(attention_prob, V)
 
-        return x, attention
+        out = out.transpose(1, 2)
+        out = out.contiguous().view(batch_size, -1, self.head_dim)
+        out = self.fc_o(out)
+        return out
 
 
 class PositionwiseFeedforwardLayer(nn.Module):
