@@ -6,8 +6,7 @@ from pytorch_lightning import LightningModule
 
 from models.MainModel import EncoderModel
 
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = "cpu"
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class PLEncoder(LightningModule):
@@ -32,11 +31,13 @@ class PLEncoder(LightningModule):
         return loss
 
     def training_step(self, batch, batch_idx):
-        x = batch["input_ids"].to(device)
-        src_mask = batch["attention_mask"].to(device)
-        y = batch["labels"].unsqueeze(1).to(device)
+        x = batch["input_ids"]
+        src_mask = batch["attention_mask"]
+        y = batch["labels"]
 
         y_hat = self(x, src_mask)
+        print(f"")
+
         loss = self.loss_function(y_hat, y)
 
         log_dict = {

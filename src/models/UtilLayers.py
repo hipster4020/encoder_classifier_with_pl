@@ -15,10 +15,10 @@ class MultiHeadAttentionLayer(nn.Module):
         self.n_heads = n_heads
         self.head_dim = hid_dim // n_heads
 
-        self.fc_q = nn.Linear(hid_dim, hid_dim)
-        self.fc_k = nn.Linear(hid_dim, hid_dim)
-        self.fc_v = nn.Linear(hid_dim, hid_dim)
-        self.fc_o = nn.Linear(hid_dim, hid_dim)
+        self.fc_layer = nn.Linear(hid_dim, hid_dim)
+        # self.fc_k = nn.Linear(hid_dim, hid_dim)
+        # self.fc_v = nn.Linear(hid_dim, hid_dim)
+        # self.fc_o = nn.Linear(hid_dim, hid_dim)
 
         self.dropout = nn.Dropout(dropout)
 
@@ -28,41 +28,39 @@ class MultiHeadAttentionLayer(nn.Module):
 
         batch_size = query.shape[0]
 
-        def transform(x, fc_layer):
-            out = fc_layer(x)
+        def transform(x):
+            out = self.fc_layer(x)
 
             out = out.view(batch_size, -1, self.n_heads, self.head_dim)
             out = out.transpose(1, 2)  # n_batch, h, seq_len, d_k
 
             return out
 
-        Q = transform(query, self.fc_q)
-        K = transform(key, self.fc_k)
-        V = transform(value, self.fc_v)
-
-        # mask 수정
-        print(f"mask shape : {mask.shape}")
-
-        if mask is not None:
-            mask = mask.unsqueeze(1)
+        Q = transform(query)
+        K = transform(key)
+        V = transform(value)
 
         # calculate_attention
-        d_k = K.size(-1)
-        energy = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(d_k)
+        batch_size, num_head, seq_len, d_k = K.size()
 
+        energy = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(
+            d_k
+        )  # batch_size, n_heads, seq_len, d_k
+
+        # apply mask
         if mask is not None:
-            energy = energy.masked_fill(mask == 0, -1e9)
+            mask = mask.view(batch_size, 1, 1, seq_len)  # batch_size, 1, 1, seq_len
+            energy = energy.masked_fill(mask == 0, -1e4)
+
         attention_prob = F.softmax(energy, dim=-1)
+        out = torch.matmul(attention_prob, V)  # batch_size, n_head, seq_len, d_k
+        out = out.transpose(1, 2)  # batch_size, seq_len, n_head, d_k
+        out = out.contiguous().view(
+            batch_size, seq_len, self.hid_dim
+        )  # batch_size, seq_len, d_model
 
-        print(f"attention_prob shape : {attention_prob.shape}")
-        print(f"V shape : {V.shape}")
-
-        out = torch.matmul(attention_prob, V)
-
-        out = out.transpose(1, 2)
-        out = out.contiguous().view(batch_size, -1, self.head_dim)
-        out = self.fc_o(out)
-        return out
+        out = self.fc_layer(out)
+        return out, attention_prob
 
 
 class PositionwiseFeedforwardLayer(nn.Module):
