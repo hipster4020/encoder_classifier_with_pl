@@ -14,12 +14,7 @@ class MultiHeadAttentionLayer(nn.Module):
         self.hid_dim = hid_dim
         self.n_heads = n_heads
         self.head_dim = hid_dim // n_heads
-
         self.fc_layer = nn.Linear(hid_dim, hid_dim)
-        # self.fc_k = nn.Linear(hid_dim, hid_dim)
-        # self.fc_v = nn.Linear(hid_dim, hid_dim)
-        # self.fc_o = nn.Linear(hid_dim, hid_dim)
-
         self.dropout = nn.Dropout(dropout)
 
         self.scale = torch.sqrt(torch.FloatTensor([self.head_dim])).to(device)

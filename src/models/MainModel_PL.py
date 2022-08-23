@@ -36,7 +36,8 @@ class PLEncoder(LightningModule):
         y = batch["labels"]
 
         y_hat = self(x, src_mask)
-        print(f"")
+        # print(f"y : {y}")
+        # print(f"y hat : {y_hat}")
 
         loss = self.loss_function(y_hat, y)
 

@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from models.TransformerLayer import EncoderLayer
 
@@ -13,6 +14,7 @@ class EncoderModel(nn.Module):
         num_heads,
         inner_dim,
         dropout,
+        num_classes,
         max_length=512,
     ):
         super().__init__()
@@ -33,8 +35,12 @@ class EncoderModel(nn.Module):
         self.num_heads = num_heads
         self.inner_dim = inner_dim
         self.dropout = nn.Dropout(dropout)
+        self.num_classes = num_classes
 
         self.scale = torch.sqrt(torch.FloatTensor([hidden_size])).to(self.device)
+
+        self.linear = nn.Linear(hidden_size, self.num_classes)
+        self.pooling_embedding = nn.Embedding(1, hidden_size)
 
     def forward(self, src, src_mask):
         batch_size = src.shape[0]
@@ -50,5 +56,13 @@ class EncoderModel(nn.Module):
 
         for layer in self.layers:
             src = layer(src, src_mask)
+            print(f"src shape : {src.shape}")
+            src = F.sigmoid(self.linear(src))
+            print(f"src sigmoid : {src.shape}")
+
+            src = self.pooling_embedding(src)
+            print(f"src pooling_embedding : {src.shape}")
+            # src = torch.argmax(src)
+            # print(f"src argmax : {src}")
 
         return src
