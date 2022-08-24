@@ -31,14 +31,12 @@ class PLEncoder(LightningModule):
         return loss
 
     def training_step(self, batch, batch_idx):
-        x = batch["input_ids"]
-        src_mask = batch["attention_mask"]
-        y = batch["labels"]
+        x = batch["input_ids"].to(self.device)
+        src_mask = batch["attention_mask"].to(self.device)
+        y = batch["labels"].to(self.device)
 
         y_hat = self(x, src_mask)
-        # print(f"y : {y}")
-        # print(f"y hat : {y_hat}")
-
+        y_hat = torch.Tensor([torch.argmax(i) for i in y_hat])
         loss = self.loss_function(y_hat, y)
 
         log_dict = {
@@ -49,11 +47,12 @@ class PLEncoder(LightningModule):
         return log_dict
 
     def validation_step(self, batch, batch_idx):
-        x = batch["input_ids"].to(device)
-        src_mask = batch["attention_mask"].to(device)
-        y = batch["labels"].unsqueeze(1).to(device)
+        x = batch["input_ids"].to(self.device)
+        src_mask = batch["attention_mask"].to(self.device)
+        y = batch["labels"].to(self.device)
 
         y_hat = self(x, src_mask)
+        y_hat = torch.Tensor([torch.argmax(i) for i in y_hat])
         loss = self.loss_function(y_hat, y)
 
         log_dict = {

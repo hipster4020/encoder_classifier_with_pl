@@ -54,7 +54,8 @@ class EncoderModel(nn.Module):
 
         for layer in self.layers:
             src = layer(src, src_mask)
-            src = src[:, 0, :]  # cls slicing
-            src = F.softmax(self.intermediate_layers(src))
+
+        src = src[:, 0, :]  # cls slicing
+        src = F.softmax(self.intermediate_layers(src))
 
         return src

@@ -30,7 +30,7 @@ def load(
         tokenized["input_ids"] = e["input_ids"]
         tokenized["attention_mask"] = e["attention_mask"]
 
-        label = [[int(l)] for l in sample["label"]]
+        label = [int(l) for l in sample["label"]]
         tokenized["labels"] = label
 
         return tokenized
