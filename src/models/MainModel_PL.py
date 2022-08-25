@@ -31,36 +31,45 @@ class PLEncoder(LightningModule):
         return loss
 
     def training_step(self, batch, batch_idx):
-        x = batch["input_ids"].to(self.device)
-        src_mask = batch["attention_mask"].to(self.device)
-        y = batch["labels"].to(self.device)
+        x = batch["input_ids"]
+        src_mask = batch["attention_mask"]
 
-        y_hat = self(x, src_mask)
-        y_hat = torch.Tensor([torch.argmax(i) for i in y_hat])
+        y = batch["labels"].to(self.device).float()
+        y_hat = torch.argmax(self(x, src_mask), dim=1).float()
+
+        y.requires_grad = True
+        y_hat.requires_grad = True
+
         loss = self.loss_function(y_hat, y)
 
         log_dict = {
             "train/loss": loss,
         }
-
         self.log_dict(log_dict, on_epoch=True)
-        return log_dict
+
+        print(f"train loss : {loss}")
+        return loss
 
     def validation_step(self, batch, batch_idx):
-        x = batch["input_ids"].to(self.device)
-        src_mask = batch["attention_mask"].to(self.device)
-        y = batch["labels"].to(self.device)
+        x = batch["input_ids"]
+        src_mask = batch["attention_mask"]
 
-        y_hat = self(x, src_mask)
-        y_hat = torch.Tensor([torch.argmax(i) for i in y_hat])
+        y = batch["labels"].to(self.device).float()
+        y_hat = torch.argmax(self(x, src_mask), dim=1).float()
+
+        y.requires_grad = True
+        y_hat.requires_grad = True
+
         loss = self.loss_function(y_hat, y)
 
         log_dict = {
             "eval/loss": loss,
         }
-
         self.log_dict(log_dict, on_epoch=True)
-        return log_dict
+
+        print(f"validation loss : {loss}")
+
+        return loss
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(
