@@ -11,3 +11,4 @@ src/backup
 src/models/backup/
 src/core
 tokenizer
+result

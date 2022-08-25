@@ -22,12 +22,12 @@ def main(cfg):
     eval_dataloader = get_dataloader(eval_dataset, **cfg.DATALOADER)
 
     # logs
-    # wandb_logger = WandbLogger(**cfg.PATH.wandb)
+    wandb_logger = WandbLogger(**cfg.PATH.wandb)
     callbacks = [ModelCheckpoint(**cfg.PATH.ckpt)]
 
     trainer = Trainer(
         callbacks=callbacks,
-        # logger=wandb_logger,
+        logger=wandb_logger,
         **cfg.TRAININGARGS,
     )
     trainer.fit(model, train_dataloader, eval_dataloader)

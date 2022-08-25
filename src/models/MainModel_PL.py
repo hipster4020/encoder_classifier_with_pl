@@ -36,8 +36,6 @@ class PLEncoder(LightningModule):
 
         y = batch["labels"].to(self.device).float()
         y_hat = torch.argmax(self(x, src_mask), dim=1).float()
-
-        y.requires_grad = True
         y_hat.requires_grad = True
 
         loss = self.loss_function(y_hat, y)
@@ -47,7 +45,6 @@ class PLEncoder(LightningModule):
         }
         self.log_dict(log_dict, on_epoch=True)
 
-        print(f"train loss : {loss}")
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -56,8 +53,6 @@ class PLEncoder(LightningModule):
 
         y = batch["labels"].to(self.device).float()
         y_hat = torch.argmax(self(x, src_mask), dim=1).float()
-
-        y.requires_grad = True
         y_hat.requires_grad = True
 
         loss = self.loss_function(y_hat, y)
@@ -66,8 +61,6 @@ class PLEncoder(LightningModule):
             "eval/loss": loss,
         }
         self.log_dict(log_dict, on_epoch=True)
-
-        print(f"validation loss : {loss}")
 
         return loss
 
