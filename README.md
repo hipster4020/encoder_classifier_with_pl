@@ -1,4 +1,4 @@
-# 🤖 Sentiment Classification
+# 🤖 Category Classification
 ## 👉🏻 model
 Transformer Encoder<br><br>
 BPE Tokenizer train 후 Word2vec Weight Embedding, Transformer Encoder Model<br>
