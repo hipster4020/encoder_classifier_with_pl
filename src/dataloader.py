@@ -1,6 +1,7 @@
 from os.path import abspath, splitext
 from typing import Dict, List, Optional, Union
 
+import numpy as np
 from datasets import load_dataset, logging
 from torch.utils.data import DataLoader
 from transformers import default_data_collator
@@ -17,6 +18,7 @@ def load(
     worker: int = 1,
     batch_size: int = 1000,
     shuffle_seed: Optional[int] = None,
+    num_classes: Optional[int] = None,
 ):
     def _tokenize_function(sample):
         tokenized = dict()
@@ -30,7 +32,12 @@ def load(
         tokenized["input_ids"] = e["input_ids"]
         tokenized["attention_mask"] = e["attention_mask"]
 
-        label = [[int(l)] for l in sample["label"]]
+        label = np.zeros((len(sample["label"]), num_classes))
+
+        for i, c in enumerate(sample["label"]):
+            for j in c:
+                label[i, j] = 1
+
         tokenized["labels"] = label
 
         return tokenized

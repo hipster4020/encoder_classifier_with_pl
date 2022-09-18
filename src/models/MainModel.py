@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from models.TransformerLayer import EncoderLayer
 
@@ -13,7 +14,8 @@ class EncoderModel(nn.Module):
         num_heads,
         inner_dim,
         dropout,
-        max_length=100,
+        num_classes,
+        max_length=512,
     ):
         super().__init__()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -36,6 +38,8 @@ class EncoderModel(nn.Module):
 
         self.scale = torch.sqrt(torch.FloatTensor([hidden_size])).to(self.device)
 
+        self.intermediate_layers = nn.Linear(hidden_size, num_classes)
+
     def forward(self, src, src_mask):
         batch_size = src.shape[0]
         src_len = src.shape[1]
@@ -50,5 +54,8 @@ class EncoderModel(nn.Module):
 
         for layer in self.layers:
             src = layer(src, src_mask)
+
+        src = src[:, 0, :]  # cls slicing
+        src = self.intermediate_layers(src)
 
         return src

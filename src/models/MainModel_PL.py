@@ -1,7 +1,7 @@
 from typing import Dict, Union
 
 import torch
-import torch.nn.functional as F
+import torch.nn as nn
 from pytorch_lightning import LightningModule
 
 from models.MainModel import EncoderModel
@@ -22,43 +22,46 @@ class PLEncoder(LightningModule):
         self.model = EncoderModel(**config)
         self.optimizer_config = optimizer_config
         self.class_weight = torch.tensor(class_weight)
+        self.criterion = nn.BCEWithLogitsLoss()
 
     def forward(self, x, src_mask):
         return self.model(x, src_mask)
 
     def loss_function(self, output, label):
-        loss = F.mse_loss(output, label)
+        loss = self.criterion(output, label)
         return loss
 
     def training_step(self, batch, batch_idx):
-        x = batch["input_ids"].to(device)
-        src_mask = batch["attention_mask"].to(device)
-        y = batch["labels"].unsqueeze(1).to(device)
+        x = batch["input_ids"]
+        src_mask = batch["attention_mask"]
 
+        y = batch["labels"].to(self.device).float()
         y_hat = self(x, src_mask)
+
         loss = self.loss_function(y_hat, y)
 
         log_dict = {
             "train/loss": loss,
         }
-
         self.log_dict(log_dict, on_epoch=True)
-        return log_dict
+
+        return loss
 
     def validation_step(self, batch, batch_idx):
-        x = batch["input_ids"].to(device)
-        src_mask = batch["attention_mask"].to(device)
-        y = batch["labels"].unsqueeze(1).to(device)
+        x = batch["input_ids"]
+        src_mask = batch["attention_mask"]
 
+        y = batch["labels"].to(self.device).float()
         y_hat = self(x, src_mask)
+
         loss = self.loss_function(y_hat, y)
 
         log_dict = {
             "eval/loss": loss,
         }
-
         self.log_dict(log_dict, on_epoch=True)
-        return log_dict
+
+        return loss
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(
